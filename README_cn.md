@@ -23,7 +23,7 @@ ESP-MDF 在 [ESP-WIFI-MESH](https://docs.espressif.com/projects/esp-idf/en/stabl
 * **稳定升级**：通过断点续传、数据压缩、版本回退和固件检查等机制达到高效升级；
 * **高效调试**：支持指令终端、通过无线进行日志传输和调试等多种调试方式；
 * **局域网控制**：支持 app 控制、传感器控制等；
-* **丰富的示例**：提供了基于 ESP-WIFI-MESH 的照明等综合解决方案。
+* **丰富的示例**：提供了基于 ESP-MESH（又称 ESP-WIFI-MESH）、ESP-MESH-LITE 的照明等综合解决方案。
 
 ## 框架
 
@@ -36,39 +36,39 @@ ESP-MDF 共分为 Utils、Components 和 Examples 三个部分（如下图所示
         - [Driver](https://docs.espressif.com/projects/esp-mdf/zh_CN/latest/api-reference/third_party/index.html)：常用的按键、LED 等驱动
         - [Miniz](https://docs.espressif.com/projects/esp-mdf/zh_CN/latest/api-reference/third_party/index.html)：无损高性能数据压缩库
         - [Aliyun](https://github.com/espressif/esp-aliyun)：阿里云物联网套件
-
+        - [ESP-Rainmaker](https://github.com/espressif/esp-rainmaker)：乐鑫 Rainmaker 物联网套件
+        
     - Transmission：设备间数据通信方式
         - [Mwifi](https://docs.espressif.com/projects/esp-mdf/zh_CN/latest/api-reference/mwifi/index.html)：对 ESP-WIFI-MESH 的封装，在其基础上增加了重包过滤、数据压缩、分包传输和 P2P 组播
         - [Mespnow](https://docs.espressif.com/projects/esp-mdf/zh_CN/latest/api-reference/mespnow/index.html)：对 ESP-NOW 的封装，在其基础上增加了重包过滤、CRC 校验、数据分包
-
+    
     - Mcommon：ESP-MDF 各组件之间的共用模块
         - Event loop：ESP-MDF 的事件处理
         - Error Check：ESP-MDF 的错误码管理
         - Memory Management：ESP-MDF 的内存管理
         - Information Storage：将配置信息存储到 flash 中
-
 - **Components**：
     - [Mconfig](https://docs.espressif.com/projects/esp-mdf/zh_CN/latest/api-guides/mconfig.html)：配网模块
     - [Mupgrade](https://docs.espressif.com/projects/esp-mdf/zh_CN/latest/api-guides/mupgrade.html)：升级模块
     - Mdebug：调试模块
     - [Mlink](https://docs.espressif.com/projects/esp-mdf/zh_CN/latest/api-guides/mlink.html)：局域网控制模块
-
+    - Mesh_Lite：轻量化 Mesh 模块
 - **Examples**：
     - [Function demo](examples/function_demo/)：各个功能模块的使用示例
-        - [Mwifi](examples/function_demo/mwifi)：常见组网方式的示例：无路由器、有路由器。先基于此示例进行开发,而后在其基础上添加配网、升级、无线测试等功能
+        - [Mwifi](examples/function_demo/mwifi)：常见组网方式的示例：无路由器、有路由器。先基于此示例进行开发，而后在其基础上添加配网、升级、无线测试等功能
         - [Mupgrade](examples/function_demo/mupgrade)：设备的升级示例
         - [Mconfig](examples/function_demo/mconfig)：设备的配网示例
         - [Mcommon](examples/function_demo/mcommon)：通用模块示例,事件处理 内存管理 信息存储的使用示例
-
     - Debug：性能测试和调试工具
         - [Console Test](examples/function_demo/mwifi/console_test)：通过串口输入命令的方式，测试 ESP-WIFI-MESH 吞吐量、网络配置、发包时延。
         - [Wireless Debug](examples/wireless_debug/)：通过无线的方式进行 ESP-MDF 调试
-
     - [Development Kit](examples/development_kit/)：ESP32-MeshKit 使用示例, 用于调研和了解 ESP-WIFI-MESH
         - [ESP32-MeshKit-Light](examples/development_kit/light/)：板载 ESP32 芯片的智能灯，用于 ESP-WIFI-MESH 作为主干网络进行长供电的场景。支持 BLE + ESP-WIFI-MESH, 可实现BLE网关, iBeacon 和 BLE 扫描
         - [ESP32-MeshKit-Sense](examples/development_kit/sense/)：ESP-WIFI-MESH 在 Deep-sleep + Light-sleep 模式下的低功耗方案，可用于：监测 MeshKit 外设功耗和根据传感器数据控制 MeshKit 外设
         - [ESP32-MeshKit-Button](examples/development_kit/button/)：ESP-WIFI-MESH 在超低功耗的场景下使用，平常处于断电状态，仅在唤醒时工作，并通过 [ESP-NOW](https://docs.espressif.com/projects/esp-idf/zh_CN/stable/api-reference/network/esp_now.html) 给 ESP-WIFI-MESH 设备发包。
-
+    - [Mesh_Lite](examples/mesh_lite/)：轻量化 Mesh 使用示例
+        - [Router](examples/mesh_lite/router/)：Mesh-Lite 组网示例，本示例仅简单演示设备组网，不包含复杂的网络应用。
+        - [Rainmaker](examples/mesh_lite/rainmaker/)：本示例演示 Mesh-Lite 对接 ESP-Rainmaker 云平台，组网内所有设备均可单独接入云，并通过 [Nova Home](https://play.google.com/store/apps/details?id=com.espressif.novahome) APP 进行控制。
     - 云平台: ESP-MDF 对接云平台
         - [Aliyun Linkkit](examples/maliyun_linkkit/)：ESP-MDF 接入阿里飞燕平台示例
         - AWS：ESP-MDF 接入 AWS 平台示例

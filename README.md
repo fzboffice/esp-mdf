@@ -27,7 +27,7 @@ ESP-MDF is based on the [ESP-WIFI-MESH](https://docs.espressif.com/projects/esp-
 
 * **LAN control**: Network can be controlled by an app, sensor, etc.
 
-* **Various application demos**: It offers comprehensive solutions based on ESP-WIFI-MESH in the areas of lighting, etc.
+* **Various application demos**: It offers comprehensive solutions based on ESP-MESH(aka ESP-WIFI-MESH) and ESP-MESH-LITE in the areas of lighting, etc.
 
 ## Framework
 
@@ -40,30 +40,29 @@ ESP-MDF consists of Utils, Components and Examples (see the below figure). Utils
         - [Driver](https://docs.espressif.com/projects/esp-mdf/en/latest/api-reference/third_party/index.html): drivers for different devices, such as frequently used buttons and LEDs
         - [Miniz](https://docs.espressif.com/projects/esp-mdf/en/latest/api-reference/third_party/index.html): lossless, high performance data compression library
         - [Aliyun](https://github.com/espressif/esp-aliyun): Aliyun IoT kit
-
+        - [ESP-Rainmaker](https://github.com/espressif/esp-rainmaker): ESP-Rainmaker IoT kit
+        
     - Transmission: the way of data transmission between devices
         - [Mwifi](https://docs.espressif.com/projects/esp-mdf/en/latest/api-reference/mwifi/index.html): adds to ESP-WIFI-MESH the retransmission filter, data compression, fragmented transmission, and P2P multicast features
         - [Mespnow](https://docs.espressif.com/projects/esp-mdf/en/latest/api-reference/mespnow/index.html): adds to ESP-NOW the retransmission filter, Cyclic Redundancy Check (CRC), and data fragmentation features
-
+    
     - Mcommon: modules shared by all ESP-MDF components
         - Event loop: deals with ESP-MDF events
         - Error Check: manages ESP-MDF's code errors
         - Memory Management: Memory Management for ESP-MDF
         - Information Storage: Store configuration information in flash
-
 - **Components**:
     - [Mconfig](https://docs.espressif.com/projects/esp-mdf/en/latest/api-guides/mconfig.html): network configuration module
     - [Mupgrade](https://docs.espressif.com/projects/esp-mdf/en/latest/api-guides/mupgrade.html): upgrade module
     - [Mdebug](https://docs.espressif.com/projects/esp-mdf/en/latest/api-guides/mupgrade.html): debugging module
     - [Mlink](https://docs.espressif.com/projects/esp-mdf/en/latest/api-guides/mlink.html): LAN control module
-
+    - Mesh_Lite: Mesh-Lite module
 - **Examples**:
     - [Function demo](examples/function_demo/): Example of use of each function module
         - [Mwifi Example](examples/function_demo/mwifi): An example of common networking methods: no router, no router. First develop based on this example, then add distribution, upgrade, wireless test and other functions based on it.
         - [Mupgrade Example](examples/function_demo/mupgrade): Upgrade example of the device
         - [Mconfig Example](examples/function_demo/mconfig): Example of network configuration of the device
         - [Mcommon Examples](examples/function_demo/mcommon): Common Module Example, Event Processing Memory Management Example of Using Information Store
-
     - Debug: Performance Testing and Debugging Tools
         - [Console Test](examples/function_demo/mwifi/console_test): Test the ESP-WIFI-MESH throughput, network configuration, and packet delay by entering commands through the serial port.
         - [Wireless Debug](examples/wireless_debug/): ESP-MDF debugging via wireless
@@ -73,11 +72,13 @@ ESP-MDF consists of Utils, Components and Examples (see the below figure). Utils
            - Monitoring the power consumption of MeshKit peripherals
            - Controlling MeshKit peripherals based on the data from multiple onboard sensors. 
         - [ESP32-MeshKit-Button](examples/development_kit/button/): Smart button solution, tailored for ESP-WIFI-MESH applications with ultra-low power consumption. The device wakes up only for a short time when the buttons are pressed and transmits packets to ESP-WIFI-MESH devices via [ESP-NOW](https://docs.espressif.com/projects/esp-idf/en/stable/api-reference/network/esp_now.html).
-
-
+     - [Mesh_Lite](examples/mesh_lite/): Example of use Mesh-Lite module
+        - [Router](examples/mesh_lite/router/): Mesh-Lite networking example, this example only briefly demonstrates device networking, and does not include complex network applications.
+        - [Rainmaker](examples/mesh_lite/Rainmaker/): This example demonstrates the connection of Mesh-Lite to the ESP-Rainmaker cloud platform. All devices in the network can be connected to the cloud independently, and can be accessed through [Nova Home](https://play.google.com/store/apps/details?id=com.espressif.novahome)  APP for control.
      - Cloud Platform: ESP-MDF docking cloud platform
         - [Aliyun Linkkit](examples/maliyun_linkkit/): Example of ESP-MDF access to Alibaba Cloud platform
         - AWS: ESP-MDF Access AWS Platform Example
+
 ## Develop with ESP-MDF
 
 You first need to read [ESP-WIFI-MESH Communication Protocol](https://docs.espressif.com/projects/esp-idf/en/stable/api-guides/mesh.html) and [ESP-MDF Programming Guide](Https://docs.espressif.com/projects/esp-mdf/en/latest/?badge=latest) and research and learn about ESP-WIFI-MESH through the ESP32-MeshKit development kit. Secondly, based on [Function demo](examples/function_demo/) for your project development, when you can encounter problems in development, you can first go to [BBS](https://esp32.com/viewforum.php?f=21&sid=27bd50a0e45d47b228726ee55437f57e) and [Issues](https://github.com/espressif/esp-mdf/issues) to find out if a similar problem already exists. If there is no similar problem, you can also ask directly on the website.
