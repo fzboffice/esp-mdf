@@ -586,13 +586,13 @@ mdf_err_t mconfig_chain_slave_deinit()
 
 mdf_err_t mconfig_chain_master(const mconfig_data_t *mconfig_data, TickType_t duration_ticks)
 {
+    if (!g_chain_master_exit_sem) { g_chain_master_exit_sem = xSemaphoreCreateBinary(); }
     MDF_PARAM_CHECK(mconfig_data);
 #ifdef CONFIG_MCONFIG_WHITELIST_ENABLE
     MDF_PARAM_CHECK(mconfig_data->whitelist_size);
 #endif
 
     if (g_chain_master_duration_ticks > 0) {
-        g_chain_master_exit_sem       = xSemaphoreCreateBinary();
         g_chain_master_duration_ticks = 0;
 
         xSemaphoreTake(g_chain_master_exit_sem, portMAX_DELAY);
