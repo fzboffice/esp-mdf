@@ -21,7 +21,7 @@ uint8_t *mlink_mac_str2hex(const char *mac_str, uint8_t *mac_hex)
     MDF_ERROR_ASSERT(!mac_str);
     MDF_ERROR_ASSERT(!mac_hex);
 
-    uint32_t mac_data[6] = {0};
+    unsigned int mac_data[6] = {0};
 
     sscanf(mac_str, "%02x%02x%02x%02x%02x%02x",
            mac_data, mac_data + 1, mac_data + 2, mac_data + 3, mac_data + 4, mac_data + 5);

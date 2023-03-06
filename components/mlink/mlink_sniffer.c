@@ -32,7 +32,7 @@ typedef struct sniffer_data_list {
     mlink_sniffer_data_t data;
 } __attribute__((packed)) sniffer_data_list_t;
 
-#define sniffer_timestamp() (xTaskGetTickCount() * portTICK_RATE_MS)
+#define sniffer_timestamp() (xTaskGetTickCount() * portTICK_PERIOD_MS)
 
 static const char *TAG       = "mlink_sniffer";
 static void *g_sniffer_lock  = NULL;
@@ -117,7 +117,7 @@ static mdf_err_t mlink_sniffer_list_insert(const mlink_sniffer_data_t *sniffer_d
 
     if (notice_percentage && g_device_num > g_sniffer_config.buffer_num * notice_percentage / 100) {
         mdf_event_loop_send(MDF_EVENT_MLINK_BUFFER_FULL, NULL);
-        MDF_LOGD("sniffer notice percentage: %d%%, g_device_num: %d",
+        MDF_LOGD("sniffer notice percentage: %d%%, g_device_num: %"PRIu32"",
                  notice_percentage, g_device_num);
         notice_percentage += notice_percentage;
     }

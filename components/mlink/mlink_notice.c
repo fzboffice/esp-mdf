@@ -71,7 +71,7 @@ static mdf_err_t mlink_notice_mdns_init(void)
                                ardu_txt_data, sizeof(ardu_txt_data) / sizeof(mdns_txt_item_t));
 
         if (ret != MDF_OK) {
-            vTaskDelay(100 / portTICK_RATE_MS);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
         }
     } while (ret != MDF_OK && retry_count--);
 
@@ -192,7 +192,7 @@ static void mlink_notice_udp_task(void *arg)
     while (!g_notice_udp_exit_flag) {
         memset(udp_server_buf, 0, MLINK_NOTICE_UDP_BUF_SIZE);
 
-        if (xQueueReceive(g_notice_udp_queue, &q_data, MLINK_NOTICE_UDP_RECV_TIMEROUT_MS / portTICK_RATE_MS)) {
+        if (xQueueReceive(g_notice_udp_queue, &q_data, MLINK_NOTICE_UDP_RECV_TIMEROUT_MS / portTICK_PERIOD_MS)) {
             strncpy(message_tmp, q_data->message, sizeof(message_tmp) - 1);
             broadcast_msg_buf  = MDF_MALLOC(MLINK_NOTICE_UDP_QUEUE_NUM * 13 + 64);
             broadcast_msg_size = sprintf(broadcast_msg_buf, "mac=%02x%02x%02x%02x%02x%02x", MAC2STR(q_data->mac));
@@ -200,7 +200,7 @@ static void mlink_notice_udp_task(void *arg)
 
             do {
                 if (!g_notice_udp_queue || !xQueueReceive(g_notice_udp_queue, &q_data,
-                        MLINK_NOTICE_UDP_RECV_TIMEROUT_MS / portTICK_RATE_MS)) {
+                        MLINK_NOTICE_UDP_RECV_TIMEROUT_MS / portTICK_PERIOD_MS)) {
                     break;
                 }
 
@@ -221,12 +221,12 @@ static void mlink_notice_udp_task(void *arg)
             } while (broadcast_msg_size < MLINK_NOTICE_UDP_QUEUE_NUM * 13);
 
             broadcast_msg_size += sprintf(broadcast_msg_buf + broadcast_msg_size,
-                                          "\r\nflag=%d\r\ntype=%s\r\n", xTaskGetTickCount(), message_tmp);
+                                          "\r\nflag=%"PRIu32"\r\ntype=%s\r\n", xTaskGetTickCount(), message_tmp);
 
             MDF_LOGD("Mlink notice udp broadcast, size: %d, data:\n%s", broadcast_msg_size, broadcast_msg_buf);
 
             for (int i = 0, delay_time_ms = 0; i < MLINK_NOTICE_UDP_RETRY_COUNT; ++i, delay_time_ms += delay_time_ms) {
-                vTaskDelay(delay_time_ms / portTICK_RATE_MS);
+                vTaskDelay(delay_time_ms / portTICK_PERIOD_MS);
                 delay_time_ms = (i == 0) ? 10 : delay_time_ms;
                 delay_time_ms = (delay_time_ms > 50) ? 50 : delay_time_ms;
 
@@ -263,7 +263,7 @@ static void mlink_notice_udp_task(void *arg)
 
             for (int i = 0, delay_time_ms = 0; i < MLINK_NOTICE_UDP_RETRY_COUNT; ++i, delay_time_ms += delay_time_ms) {
                 vTaskDelay(delay_time_ms);
-                delay_time_ms = (i == 0) ? (10 / portTICK_RATE_MS) : delay_time_ms;
+                delay_time_ms = (i == 0) ? (10 / portTICK_PERIOD_MS) : delay_time_ms;
 
                 if (sendto(udp_server_sockfd, udp_server_buf, strlen(udp_server_buf),
                            0, (struct sockaddr *)&from_addr, from_addr_len) <= 0) {

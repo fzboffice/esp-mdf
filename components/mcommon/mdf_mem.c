@@ -34,7 +34,7 @@ void mdf_mem_add_record(void *ptr, int size, const char *tag, int line)
         return;
     }
 
-    MDF_LOGV("<%s : %d> Alloc ptr: %p, size: %d, heap free: %d", tag, line,
+    MDF_LOGV("<%s : %d> Alloc ptr: %p, size: %d, heap free: %lu", tag, line,
              ptr, (int)size, esp_get_free_heap_size());
 
     if (!g_mem_info) {
@@ -74,7 +74,7 @@ void mdf_mem_remove_record(void *ptr, const char *tag, int line)
         return;
     }
 
-    MDF_LOGV("<%s : %d> Free ptr: %p, heap free: %d", tag, line, ptr, esp_get_free_heap_size());
+    MDF_LOGV("<%s : %d> Free ptr: %p, heap free: %lu", tag, line, ptr, esp_get_free_heap_size());
 
     if (!g_mem_info) {
         g_mem_info = calloc(MDF_MEM_DBG_INFO_MAX, sizeof(mdf_mem_info_t));
@@ -118,7 +118,7 @@ void mdf_mem_print_record(void)
 
     for (int i = 0; i < MDF_MEM_DBG_INFO_MAX; i++) {
         if (g_mem_info[i].size) {
-            MDF_LOGI("(%d) <%s: %d> ptr: %p, size: %d", g_mem_info[i].timestamp, g_mem_info[i].tag, g_mem_info[i].line,
+            MDF_LOGI("(%lu) <%s: %d> ptr: %p, size: %d", g_mem_info[i].timestamp, g_mem_info[i].tag, g_mem_info[i].line,
                      g_mem_info[i].ptr, g_mem_info[i].size);
             total_size += g_mem_info[i].size;
         }
@@ -126,7 +126,7 @@ void mdf_mem_print_record(void)
 
     xSemaphoreGive(g_mem_info_lock);
 
-    MDF_LOGI("Memory record, num: %d, size: %zu", g_mem_count, total_size);
+    MDF_LOGI("Memory record, num: %lu, size: %zu", g_mem_count, total_size);
 }
 
 #if ( ( configUSE_TRACE_FACILITY == 1 ) && ( configUSE_STATS_FORMATTING_FUNCTIONS > 0 ) )
@@ -174,7 +174,7 @@ void mdf_mem_print_task()
 #endif
 
         /* Write the rest of the string. */
-        MDF_LOGI("%-16s\t%c\t%u\t%u\t%u\t%hd\t%-16u%-s%%",
+        MDF_LOGI("%-16s\t%c\t%lu\t%lu\t%lu\t%hd\t%-16lu%-s%%",
                  pxTaskStatusArray[i].pcTaskName, task_status_char[pxTaskStatusArray[i].eCurrentState],
                  (uint32_t) pxTaskStatusArray[i].uxCurrentPriority,
                  (uint32_t) pxTaskStatusArray[i].usStackHighWaterMark,
@@ -190,10 +190,10 @@ void mdf_mem_print_task()
 void mdf_mem_print_heap(void)
 {
 #ifndef CONFIG_SPIRAM_SUPPORT
-    MDF_LOGI("Free heap, current: %d, minimum: %d",
+    MDF_LOGI("Free heap, current: %lu, minimum: %lu",
              esp_get_free_heap_size(), esp_get_minimum_free_heap_size());
 #else
-    MDF_LOGI("Free heap, internal current: %d, minimum: %d, total current: %d, minimum: %d",
+    MDF_LOGI("Free heap, internal current: %zu, minimum: %zu, total current: %"PRIu32", minimum: %"PRIu32,
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              esp_get_free_heap_size(), esp_get_minimum_free_heap_size());

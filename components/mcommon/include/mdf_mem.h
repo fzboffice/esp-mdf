@@ -88,7 +88,7 @@ void mdf_mem_print_task(void);
         void *ptr = heap_caps_malloc(size, MALLOC_CAP_INDICATE); \
         if (MDF_MEM_DEBUG) { \
             if(!ptr) { \
-                MDF_LOGW("<ESP_ERR_NO_MEM> Malloc size: %d, ptr: %p, heap free: %d", (int)size, ptr, esp_get_free_heap_size()); \
+                MDF_LOGW("<ESP_ERR_NO_MEM> Malloc size: %d, ptr: %p, heap free: %"PRIu32, (int)size, ptr, esp_get_free_heap_size()); \
             } else { \
                 mdf_mem_add_record(ptr, size, TAG, __LINE__); \
             } \
@@ -110,7 +110,7 @@ void mdf_mem_print_task(void);
         void *ptr = heap_caps_calloc(n, size, MALLOC_CAP_INDICATE); \
         if (MDF_MEM_DEBUG) { \
             if(!ptr) { \
-                MDF_LOGW("<ESP_ERR_NO_MEM> Calloc size: %d, ptr: %p, heap free: %d", (int)(n) * (size), ptr, esp_get_free_heap_size()); \
+                MDF_LOGW("<ESP_ERR_NO_MEM> Calloc size: %d, ptr: %p, heap free: %"PRIu32, (int)(n) * (size), ptr, esp_get_free_heap_size()); \
             } else { \
                 mdf_mem_add_record(ptr, (n) * (size), TAG, __LINE__); \
             } \
@@ -132,7 +132,7 @@ void mdf_mem_print_task(void);
         void *new_ptr = heap_caps_realloc(ptr, size, MALLOC_CAP_INDICATE); \
         if (MDF_MEM_DEBUG) { \
             if(!new_ptr) { \
-                MDF_LOGW("<ESP_ERR_NO_MEM> Realloc size: %d, new_ptr: %p, heap free: %d", (int)size, new_ptr, esp_get_free_heap_size()); \
+                MDF_LOGW("<ESP_ERR_NO_MEM> Realloc size: %d, new_ptr: %p, heap free: %"PRIu32, (int)size, new_ptr, esp_get_free_heap_size()); \
             } else { \
                 mdf_mem_remove_record(ptr, TAG, __LINE__); \
                 mdf_mem_add_record(new_ptr, size, TAG, __LINE__); \
@@ -155,7 +155,7 @@ void mdf_mem_print_task(void);
 #define MDF_REALLOC_RETRY(ptr, size) ({ \
         void *new_ptr = NULL; \
         while (size > 0 && !(new_ptr = heap_caps_realloc(ptr, size, MALLOC_CAP_INDICATE))) { \
-            MDF_LOGW("<ESP_ERR_NO_MEM> Realloc size: %d, new_ptr: %p, heap free: %d", (int)size, new_ptr, esp_get_free_heap_size()); \
+            MDF_LOGW("<ESP_ERR_NO_MEM> Realloc size: %d, new_ptr: %p, heap free: %"PRIu32, (int)size, new_ptr, esp_get_free_heap_size()); \
             vTaskDelay(pdMS_TO_TICKS(100)); \
         } \
         if (MDF_MEM_DEBUG) { \

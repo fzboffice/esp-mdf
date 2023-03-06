@@ -39,7 +39,7 @@ static mdf_err_t aliyun_answer_mutex_lock(void)
         configASSERT(g_aliyun_answer_lock);
     }
 
-    return xSemaphoreTake(g_aliyun_answer_lock, 10000 / portTICK_RATE_MS) != pdPASS ? MDF_FAIL : MDF_OK;
+    return xSemaphoreTake(g_aliyun_answer_lock, 10000 / portTICK_PERIOD_MS) != pdPASS ? MDF_FAIL : MDF_OK;
 }
 
 static mdf_err_t aliyun_answer_mutex_unlock(void)

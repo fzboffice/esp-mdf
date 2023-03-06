@@ -14,6 +14,7 @@
 
 #include "argtable3/argtable3.h"
 #include "esp_console.h"
+#include "spi_flash_mmap.h"
 #include "mbedtls/base64.h"
 
 #include "mdf_common.h"
@@ -29,7 +30,7 @@ static bool mac_str2hex(const char *mac_str, uint8_t *mac_hex)
     MDF_ERROR_ASSERT(!mac_str);
     MDF_ERROR_ASSERT(!mac_hex);
 
-    uint32_t mac_data[6] = {0};
+    unsigned int mac_data[6] = {0};
 
     int ret = sscanf(mac_str, MACSTR, mac_data, mac_data + 1, mac_data + 2,
                      mac_data + 3, mac_data + 4, mac_data + 5);
@@ -53,15 +54,10 @@ static int version_func(int argc, char **argv)
     MDF_LOGI("ESP-IDF version  : %s", esp_get_idf_version());
     MDF_LOGI("ESP-MDF version  : %s", mdf_get_version());
     MDF_LOGI("compile time     : %s %s", __DATE__, __TIME__);
-    MDF_LOGI("free heap        : %d Bytes", esp_get_free_heap_size());
+    MDF_LOGI("free heap        : %lu Bytes", esp_get_free_heap_size());
     MDF_LOGI("CPU cores        : %d", chip_info.cores);
     MDF_LOGI("silicon revision : %d", chip_info.revision);
-    MDF_LOGI("feature          : %s%s%s%s%d%s",
-             chip_info.features & CHIP_FEATURE_WIFI_BGN ? "/802.11bgn" : "",
-             chip_info.features & CHIP_FEATURE_BLE ? "/BLE" : "",
-             chip_info.features & CHIP_FEATURE_BT ? "/BT" : "",
-             chip_info.features & CHIP_FEATURE_EMB_FLASH ? "/Embedded-Flash:" : "/External-Flash:",
-             spi_flash_get_chip_size() / (1024 * 1024), " MB");
+
 
     return ESP_OK;
 }
@@ -414,7 +410,7 @@ static int coredump_func(int argc, char **argv)
                     break;
                 }
 
-                vTaskDelay(100 / portTICK_RATE_MS);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
             }
 
             MDF_ERROR_BREAK(ret != MDF_OK, "mdebug_espnow_write, seq: %d", packet->seq);
@@ -423,7 +419,7 @@ static int coredump_func(int argc, char **argv)
              * @brief TODO Since espnow is now an unreliable transmission,
              *             sending too fast will result in packet loss.
              */
-            vTaskDelay(20 / portTICK_RATE_MS);
+            vTaskDelay(20 / portTICK_PERIOD_MS);
         }
 
         packet->type = MDEBUG_COREDUMP_END;

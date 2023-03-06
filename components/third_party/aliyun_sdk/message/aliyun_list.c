@@ -26,7 +26,7 @@ static const char *TAG = "aliyun_list";
 
 static SLIST_HEAD(sub_list_, sub_info_list) g_info_list;
 
-static xSemaphoreHandle g_list_lock = NULL;
+static SemaphoreHandle_t g_list_lock = NULL;
 
 static void aliyun_list_mutex_lock(void)
 {

@@ -727,7 +727,7 @@ static mdf_err_t aliyun_gateway_process(int type, uint8_t *src_addr, aliyun_buff
 }
 
 #ifdef CONFIG_ALIYUN_PLATFORM_MDF
-static void delay_refresh_handler(xTimerHandle xtimer)
+static void delay_refresh_handler(TimerHandle_t xtimer)
 {
     xSemaphoreGive(g_refresh_device_list_sepr);
 }
@@ -750,7 +750,7 @@ static void aliyun_gateway_read_task(void *arg)
     buffer->payload = buffer->data + CONFIG_ALIYUN_TOPIC_SIZE + 1;
 
 #ifdef CONFIG_ALIYUN_PLATFORM_MDF
-    xTimerHandle delay_refresh_timer = xTimerCreate("delay_refresh", pdMS_TO_TICKS(1000), false, NULL, delay_refresh_handler);
+    TimerHandle_t delay_refresh_timer = xTimerCreate("delay_refresh", pdMS_TO_TICKS(1000), false, NULL, delay_refresh_handler);
 #endif
 
     MDF_LOGI("aliyun_gateway_read_task is running");
@@ -777,7 +777,7 @@ static void aliyun_gateway_read_task(void *arg)
         if (aliyun_mqtt_get_connet_status() != MDF_OK) { // if mqtt is disconnect, then ignore all data from subdevice
             is_login = false;
             buffer->payload_len = CONFIG_ALIYUN_PAYLOAD_SIZE;
-            aliyun_platform_gateway_read(src_addr, &type, buffer->payload, &buffer->payload_len, CONFIG_ALIYUN_READ_TIMROUT_MS / portTICK_RATE_MS);
+            aliyun_platform_gateway_read(src_addr, &type, buffer->payload, &buffer->payload_len, CONFIG_ALIYUN_READ_TIMROUT_MS / portTICK_PERIOD_MS);
             continue;
         }
 
@@ -789,7 +789,7 @@ static void aliyun_gateway_read_task(void *arg)
         }
 
         buffer->payload_len = CONFIG_ALIYUN_PAYLOAD_SIZE;
-        ret = aliyun_platform_gateway_read(src_addr, &type, buffer->payload, &buffer->payload_len, CONFIG_ALIYUN_READ_TIMROUT_MS / portTICK_RATE_MS);
+        ret = aliyun_platform_gateway_read(src_addr, &type, buffer->payload, &buffer->payload_len, CONFIG_ALIYUN_READ_TIMROUT_MS / portTICK_PERIOD_MS);
 
         if (ret == MDF_OK) {
             aliyun_gateway_process(type, src_addr, buffer);

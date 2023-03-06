@@ -69,7 +69,7 @@ mdf_err_t mupgrade_version_fallback()
 
 #ifdef CONFIG_MUPGRADE_VERSION_FALLBACK_RESTART
 
-static void restart_count_erase_timercb(void *timer)
+static void restart_count_erase_timercb(TimerHandle_t timer)
 {
     if (!xTimerStop(timer, portMAX_DELAY)) {
         MDF_LOGE("xTimerStop timer: %p", timer);
@@ -97,7 +97,7 @@ static bool restart_trigger()
     } else {
         mdf_info_load(MUPGRADE_STORE_RESTART_COUNT_KEY, &restart_count, &restart_count_lenght);
         restart_count++;
-        MDF_LOGW("restart reason: %d, count: %d", reset_reason, restart_count);
+        MDF_LOGW("restart reason: %d, count: %"PRIu32, reset_reason, restart_count);
     }
 
     /**< If the device restarts within the instruction time,
@@ -105,7 +105,7 @@ static bool restart_trigger()
     ret = mdf_info_save(MUPGRADE_STORE_RESTART_COUNT_KEY, &restart_count, sizeof(uint32_t));
     MDF_ERROR_CHECK(ret != ESP_OK, false, "Save the number of restarts within the set time");
 
-    timer = xTimerCreate("restart_count_erase", CONFIG_MUPGRADE_RESTART_TIMEOUT / portTICK_RATE_MS,
+    timer = xTimerCreate("restart_count_erase", CONFIG_MUPGRADE_RESTART_TIMEOUT / portTICK_PERIOD_MS,
                          false, NULL, restart_count_erase_timercb);
     MDF_ERROR_CHECK(!timer, false, "xTaskCreate, timer: %p", timer);
 

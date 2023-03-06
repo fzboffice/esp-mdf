@@ -79,9 +79,9 @@ static mdf_err_t mupgrade_status(const mupgrade_status_t *status, size_t size)
     ret = MDF_ERR_MUPGRADE_FIRMWARE_PARTITION;
     MDF_ERROR_GOTO(!running || !update, EXIT,
                    "No partition is found or flash read operation failed");
-    MDF_LOGD("Running partition, label: %s, type: 0x%x, subtype: 0x%x, address: 0x%x",
+    MDF_LOGD("Running partition, label: %s, type: 0x%x, subtype: 0x%x, address: 0x%"PRIx32,
              running->label, running->type, running->subtype, running->address);
-    MDF_LOGD("Update partition, label: %s, type: 0x%x, subtype: 0x%x, address: 0x%x",
+    MDF_LOGD("Update partition, label: %s, type: 0x%x, subtype: 0x%x, address: 0x%"PRIx32,
              update->label, update->type, update->subtype, update->address);
 
     g_upgrade_config->partition  = update;
@@ -196,7 +196,7 @@ static mdf_err_t mupgrade_write(const mupgrade_packet_t *packet, size_t size)
     static uint32_t s_next_written_percentage = CONFIG_MUPGRADE_STATUS_REPORT_INTERVAL;
     uint32_t written_percentage = g_upgrade_config->status.written_size * 100 / g_upgrade_config->status.total_size;
 
-    MDF_LOGD("packet_seq: %d, packet_size: %d, written_size: %d, progress: %03d%%, next_percentage: %03d%%",
+    MDF_LOGD("packet_seq: %"PRIu16", packet_size: %"PRIu16", written_size: %zu, progress: %03"PRIu32"%%, next_percentage: %03"PRIu32"%%",
              packet->seq, packet->size, g_upgrade_config->status.written_size, written_percentage, s_next_written_percentage);
 
     if (written_percentage == s_next_written_percentage) {
@@ -215,9 +215,9 @@ static mdf_err_t mupgrade_write(const mupgrade_packet_t *packet, size_t size)
     if (g_upgrade_config->status.written_size == g_upgrade_config->status.total_size) {
         ESP_LOG_BUFFER_CHAR_LEVEL(TAG, g_upgrade_config->status.progress_array,
                                   MUPGRADE_PACKET_MAX_NUM / 8, ESP_LOG_VERBOSE);
-        MDF_LOGI("Write total_size: %d, written_size: %d, spend time: %ds",
+        MDF_LOGI("Write total_size: %zu, written_size: %zu, spend time: %"PRIu32"s",
                  g_upgrade_config->status.total_size, g_upgrade_config->status.written_size,
-                 (xTaskGetTickCount() - g_upgrade_config->start_time) * portTICK_RATE_MS / 1000);
+                 (xTaskGetTickCount() - g_upgrade_config->start_time) * portTICK_PERIOD_MS / 1000);
 
         /**< If ESP32 was reset duration OTA, and after restart, the update_handle will be invalid,
              but it still can switch boot partition and reboot successful */

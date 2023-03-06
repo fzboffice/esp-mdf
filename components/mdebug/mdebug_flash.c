@@ -55,7 +55,7 @@ mdf_err_t mdebug_flash_init()
 
     MDF_ERROR_CHECK(!g_log_part, MDF_ERR_NOT_SUPPORTED, "esp_partition_get");
     MDF_ERROR_CHECK(g_log_part->size < MDEBUG_LOG_FILE_MAX_SIZE, MDF_ERR_NOT_SUPPORTED,
-                    "Log file (%d Byte) size must be smaller than partition size (%d Byte).",
+                    "Log file (%d Byte) size must be smaller than partition size (%"PRIu32" Byte).",
                     MDEBUG_LOG_FILE_MAX_SIZE, g_log_part->size);
     MDF_ERROR_CHECK(MDEBUG_LOG_FILE_MAX_SIZE / MDEBUG_FLASH_FILE_MAX_NUM % 4096 != 0, MDF_ERR_NOT_SUPPORTED,
                     "The size of the log partition must be an integer of %d KB.", MDEBUG_FLASH_FILE_MAX_NUM * 4);
@@ -79,7 +79,7 @@ mdf_err_t mdebug_flash_init()
 
     g_mdebug_flash_init_flag = true;
     MDF_LOGI("Mdebug flash initialized successfully");
-    MDF_LOGI("Log save partition subtype: label: %s, addr: 0x%d, offset: %d, size: %d",
+    MDF_LOGI("Log save partition subtype: label: %s, addr: 0x%"PRIu32", offset: %d, size: %"PRIu32,
              CONFIG_MDEBUG_LOG_PARTITION_LABEL, g_log_part->address, CONFIG_MDEBUG_LOG_PARTITION_OFFSET, g_log_part->size);
 
     return MDF_OK;
@@ -123,7 +123,7 @@ mdf_err_t mdebug_flash_write(const char *data, size_t size)
         g_log_info[g_log_index].offset = 0;
 
         ret = esp_partition_erase_range(g_log_part, g_log_info[g_log_index].addr, MDEBUG_LOG_FILE_MAX_SIZE / MDEBUG_FLASH_FILE_MAX_NUM);
-        MDF_ERROR_CHECK(ret != MDF_OK, ret, "esp_partition_erase_range, addr: %x", g_log_info[g_log_index].addr);
+        MDF_ERROR_CHECK(ret != MDF_OK, ret, "esp_partition_erase_range, addr: %"PRIx32, g_log_info[g_log_index].addr);
     }
 
     /**

@@ -156,7 +156,7 @@ static void mlink_connection_remove(mlink_connection_t *mlink_conn)
     }
 }
 
-static void mlink_connection_timeout_cb(void *timer)
+static void mlink_connection_timeout_cb(TimerHandle_t timer)
 {
     char *chunk_footer             = "0\r\n\r\n";
     mlink_connection_t *mlink_conn = (mlink_connection_t *)pvTimerGetTimerID(timer);
@@ -206,7 +206,7 @@ static mdf_err_t mlink_connection_add(httpd_req_t *req, uint16_t chunks_num)
             g_conn_list[i].flag   = (chunks_num > 1) ? MLINK_HTTPD_CHUNKS_HEADER : MLINK_HTTPD_CHUNKS_DATA;
             g_conn_list[i].handle = req->handle;
             g_conn_list[i].sockfd = httpd_req_to_sockfd(req);
-            g_conn_list[i].timer  = xTimerCreate("chunk_timer", MLINK_HTTPD_RESP_TIMEROUT_MS / portTICK_RATE_MS,
+            g_conn_list[i].timer  = xTimerCreate("chunk_timer", MLINK_HTTPD_RESP_TIMEROUT_MS / portTICK_PERIOD_MS,
                                                  false, g_conn_list + i, mlink_connection_timeout_cb);
             MDF_ERROR_CHECK(!g_conn_list[i].timer, MDF_FAIL, "xTimerCreate mlink_conn fail");
             xTimerStart(g_conn_list[i].timer, portMAX_DELAY);
@@ -482,8 +482,8 @@ static void mlink_ota_send_task(void *arg)
     if (ret != MDF_OK) {
         MDF_LOGW("<%s> Root sends firmware to other nodes", mdf_err_to_name(ret));
     } else {
-        MDF_LOGI("Firmware is sent to the device to complete, Spend time: %ds",
-                 (xTaskGetTickCount() - start_time) * portTICK_RATE_MS / 1000);
+        MDF_LOGI("Firmware is sent to the device to complete, Spend time: %"PRIu32"s",
+                 (xTaskGetTickCount() - start_time) * portTICK_PERIOD_MS / 1000);
     }
 
     MDF_FREE(mlink_httpd->addrs_list);
@@ -568,8 +568,8 @@ static esp_err_t mlink_ota_firmware(httpd_req_t *req)
         }
     }
 
-    MDF_LOGI("Firmware is sent to the device to complete, Spend time: %ds",
-             (xTaskGetTickCount() - start_time) * portTICK_RATE_MS / 1000);
+    MDF_LOGI("Firmware is sent to the device to complete, Spend time: %"PRIu32"s",
+             (xTaskGetTickCount() - start_time) * portTICK_PERIOD_MS / 1000);
     start_time = xTaskGetTickCount();
 
     mlink_httpd_resp_200(req);
@@ -695,8 +695,8 @@ static esp_err_t mlink_ota_url(httpd_req_t *req)
         MDF_ERROR_GOTO(ret != MDF_OK, EXIT, "<%s> Write firmware to flash", mdf_err_to_name(ret));
     }
 
-    MDF_LOGI("The service download firmware is complete, Spend time: %ds",
-             (xTaskGetTickCount() - start_time) * portTICK_RATE_MS / 1000);
+    MDF_LOGI("The service download firmware is complete, Spend time: %"PRIu32"s",
+             (xTaskGetTickCount() - start_time) * portTICK_PERIOD_MS / 1000);
 
     mlink_httpd_resp_200(req);
     MDF_ERROR_GOTO(ret != MDF_OK, EXIT, "Helper function for HTTP 200");

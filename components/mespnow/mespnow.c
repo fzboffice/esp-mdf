@@ -14,7 +14,22 @@
 
 #include "esp_wifi.h"
 #include "esp_now.h"
+
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#include "esp32c3/rom/crc.h"
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/crc.h"
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/crc.h"
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/crc.h"
+#endif
 
 #include "mdf_common.h"
 #include "mespnow.h"
@@ -70,7 +85,7 @@ static bool g_espnow_init_flag                             = false;
 static const uint8_t g_oui[MESPNOW_OUI_LEN]                = {0x4E, 0x4F}; /**< 'N', 'O' */
 
 static EventGroupHandle_t g_event_group                    = NULL;
-static xQueueHandle g_espnow_queue[MESPNOW_TRANS_PIPE_MAX] = {NULL};
+static QueueHandle_t g_espnow_queue[MESPNOW_TRANS_PIPE_MAX] = {NULL};
 static uint8_t g_espnow_queue_size[MESPNOW_TRANS_PIPE_MAX] = {CONFIG_MESPNOW_TRANS_PIPE_DEBUG_QUEUE_SIZE,
                                                               CONFIG_MESPNOW_TRANS_PIPE_CONTROL_QUEUE_SIZE,
                                                               CONFIG_MESPNOW_TRANS_PIPE_MCONFIG_QUEUE_SIZE,
@@ -94,15 +109,15 @@ static void mespnow_send_cb(const uint8_t *addr, esp_now_send_status_t status)
 }
 
 /**< callback function of receiving ESPNOW data */
-static void mespnow_recv_cb(const uint8_t *addr, const uint8_t *data, int size)
+static void mespnow_recv_cb(const esp_now_recv_info_t * esp_now_info, const uint8_t *data, int size)
 {
-    if (!addr || !data || size < sizeof(mespnow_head_data_t)) {
-        MDF_LOGD("Receive cb args error, addr: %p, data: %p, size: %d", addr, data, size);
+    if (!esp_now_info || !data || size < sizeof(mespnow_head_data_t)) {
+        MDF_LOGD("Receive cb args error, addr: %p, data: %p, size: %d", esp_now_info->src_addr, data, size);
         return;
     }
 
     mespnow_head_data_t *espnow_data = (mespnow_head_data_t *)data;
-    xQueueHandle espnow_queue       = NULL;
+    QueueHandle_t espnow_queue       = NULL;
 
     if (espnow_data->pipe >= MESPNOW_TRANS_PIPE_MAX) {
         MDF_LOGD("Device pipe error");
@@ -152,7 +167,7 @@ static void mespnow_recv_cb(const uint8_t *addr, const uint8_t *data, int size)
     }
 
     memcpy(q_data->data, data, size);
-    memcpy(q_data->addr, addr, ESP_NOW_ETH_ALEN);
+    memcpy(q_data->addr, esp_now_info->src_addr, ESP_NOW_ETH_ALEN);
 
     if (xQueueSend(espnow_queue, &q_data, 0) != pdPASS) {
         MDF_LOGD("Send receive queue failed");
@@ -311,7 +326,7 @@ mdf_err_t mespnow_read(mespnow_trans_pipe_e pipe, uint8_t *src_addr,
     /**
      * @brief Receive data packet from special queue
      */
-    xQueueHandle espnow_queue       = g_espnow_queue[pipe];
+    QueueHandle_t espnow_queue       = g_espnow_queue[pipe];
     uint32_t start_ticks            = xTaskGetTickCount();
     ssize_t read_size               = 0;
     size_t total_size               = 0;

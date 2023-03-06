@@ -25,7 +25,7 @@
 #define MDEBUG_LOG_TIMEOUT_MS (30 * 1000)
 #define MDEBUG_LOG_QUEUE_BUFFER_MAX_SIZE   (10 * 1024)
 
-static xQueueHandle g_log_queue            = NULL;
+static QueueHandle_t g_log_queue            = NULL;
 static mdebug_log_config_t *g_log_config   = NULL;
 static TaskHandle_t g_log_send_task_handle = NULL;
 static const char *TAG  = "mdebug_log";

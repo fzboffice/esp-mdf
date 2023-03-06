@@ -24,16 +24,25 @@
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 #include "esp32c3/rom/rtc.h"
 #include "esp32c3/rom/crc.h"
+#include "esp32c3/rom/ets_sys.h"
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/rtc.h"
+#include "esp32s3/rom/crc.h"
+#include "esp32s3/rom/ets_sys.h"
 #endif
 
 #ifdef CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/rtc.h"
 #include "esp32s2/rom/crc.h"
+#include "esp32s2/rom/ets_sys.h"
 #endif
 
 #ifdef CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/rtc.h"
 #include "esp32/rom/crc.h"
+#include "esp32/rom/ets_sys.h"
 #endif
 
 #include "freertos/FreeRTOS.h"
@@ -43,6 +52,9 @@
 #include "freertos/event_groups.h"
 
 #include "esp_system.h"
+#include "esp_mac.h"
+#include "esp_chip_info.h"
+//#include "spi_flash_mmap.h"
 #include "esp_timer.h"
 #include "esp_partition.h"
 #include "esp_event.h"

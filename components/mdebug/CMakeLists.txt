@@ -9,4 +9,5 @@ set(COMPONENT_INCLUDEDIRS "include")
 
 idf_component_register(SRCS "${COMPONENT_SRCS}"
                     INCLUDE_DIRS "${COMPONENT_INCLUDEDIRS}"
-                    REQUIRES mcommon mespnow mwifi mupgrade mconfig json mdns esp_http_server vfs fatfs wpa_supplicant)
+                    REQUIRES mcommon mespnow mwifi mupgrade mconfig json mdns esp_http_server vfs fatfs wpa_supplicant
+                    PRIV_REQUIRES esp_hw_support spi_flash)

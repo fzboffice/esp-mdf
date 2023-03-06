@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "esp_wifi.h"
-#include "miniz.h"
+#include "../third_party/miniz/miniz.h"
 #include "mbedtls/md5.h"
 #include "mbedtls/aes.h"
 
@@ -154,7 +154,7 @@ static void mconfig_chain_master_task(void *arg)
     mdf_event_loop_send(MDF_EVENT_MCONFIG_CHAIN_MASTER_STARTED, NULL);
     mbedtls_aes_init(&aes_ctx);
 
-    MDF_LOGD("g_chain_master_duration_ticks: %d", g_chain_master_duration_ticks);
+    MDF_LOGD("g_chain_master_duration_ticks: %"PRIu32, g_chain_master_duration_ticks);
 
     while ((xTaskGetTickCount() - start_ticks) < g_chain_master_duration_ticks) {
         /**
@@ -170,7 +170,7 @@ static void mconfig_chain_master_task(void *arg)
          */
         espnow_size = ESPNOW_BUFFER_LEN;
         ret = mespnow_read(MESPNOW_TRANS_PIPE_MCONFIG, src_addr, espnow_data,
-                           &espnow_size, MCONFIG_CHAIN_EXIT_DELAY / portTICK_RATE_MS);
+                           &espnow_size, MCONFIG_CHAIN_EXIT_DELAY / portTICK_PERIOD_MS);
 
         if (ret != ESP_OK || espnow_size != MCONFIG_RSA_PUBKEY_PEM_DATA_SIZE + 1) {
             MDF_LOGV("receive, size: %d, data:\n%s", espnow_size, espnow_data);
@@ -304,7 +304,7 @@ static bool scan_mesh_device(uint8_t *bssid, int8_t *rssi)
     mconfig_scan_info_t scan_info = {0};
     uint32_t start_ticks          = xTaskGetTickCount();
 
-    if (!xQueueReceive(g_mconfig_scan_queue, &scan_info, MCONFIG_CHAIN_EXIT_DELAY / portTICK_RATE_MS)) {
+    if (!xQueueReceive(g_mconfig_scan_queue, &scan_info, MCONFIG_CHAIN_EXIT_DELAY / portTICK_PERIOD_MS)) {
         if (g_switch_channel_flag && g_chain_slave_flag) {
             ESP_ERROR_CHECK(esp_wifi_get_channel(&channel, &second));
 
@@ -330,7 +330,7 @@ static bool scan_mesh_device(uint8_t *bssid, int8_t *rssi)
     memcpy(bssid, scan_info.bssid, MWIFI_ADDR_LEN);
 
     /**< Device that achieves the best signal strength */
-    for (TickType_t wait_ticks = MCONFIG_CHAIN_EXIT_DELAY / portTICK_RATE_MS;
+    for (TickType_t wait_ticks = MCONFIG_CHAIN_EXIT_DELAY / portTICK_PERIOD_MS;
             xQueueReceive(g_mconfig_scan_queue, &scan_info, wait_ticks) == pdTRUE;
             wait_ticks = xTaskGetTickCount() - start_ticks < wait_ticks ?
                          wait_ticks - (xTaskGetTickCount() - start_ticks) : 0) {
@@ -412,7 +412,7 @@ static void mconfig_chain_slave_task(void *arg)
 
         if (ret != MDF_OK) {
             MDF_LOGD("<%s> mespnow_write", mdf_err_to_name(ret));
-            vTaskDelay(500 / portTICK_RATE_MS);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
             continue;
         }
 
@@ -422,7 +422,7 @@ static void mconfig_chain_slave_task(void *arg)
         ESP_ERROR_CHECK(mespnow_add_peer(ESP_IF_WIFI_STA, dest_addr, (uint8_t *)CONFIG_MCONFIG_CHAIN_LMK));
         espnow_size = ESPNOW_BUFFER_LEN;
         ret = mespnow_read(MESPNOW_TRANS_PIPE_MCONFIG, dest_addr,
-                           espnow_data, &espnow_size, 1000 / portTICK_RATE_MS);
+                           espnow_data, &espnow_size, 1000 / portTICK_PERIOD_MS);
 
         if (ret != ESP_OK || espnow_size != (MCONFIG_RSA_CIPHERTEXT_SIZE - MCONFIG_RSA_PLAINTEXT_MAX_SIZE) + sizeof(mconfig_chain_data_t)) {
             MDF_LOGD("<%s> mespnow_read", mdf_err_to_name(ret));
@@ -467,7 +467,7 @@ static void mconfig_chain_slave_task(void *arg)
         do {
             whitelist_compress_size = mconfig_data->whitelist_size + 64;
             ret = mespnow_read(MESPNOW_TRANS_PIPE_MCONFIG, src_addr, whitelist_compress_data,
-                               (size_t *)&whitelist_compress_size, 10000 / portTICK_RATE_MS);
+                               (size_t *)&whitelist_compress_size, 10000 / portTICK_PERIOD_MS);
 
             if (ret == MDF_ERR_TIMEOUT) {
                 break;
@@ -586,13 +586,13 @@ mdf_err_t mconfig_chain_slave_deinit()
 
 mdf_err_t mconfig_chain_master(const mconfig_data_t *mconfig_data, TickType_t duration_ticks)
 {
+    if (!g_chain_master_exit_sem) { g_chain_master_exit_sem = xSemaphoreCreateBinary(); }
     MDF_PARAM_CHECK(mconfig_data);
 #ifdef CONFIG_MCONFIG_WHITELIST_ENABLE
     MDF_PARAM_CHECK(mconfig_data->whitelist_size);
 #endif
 
     if (g_chain_master_duration_ticks > 0) {
-        g_chain_master_exit_sem       = xSemaphoreCreateBinary();
         g_chain_master_duration_ticks = 0;
 
         xSemaphoreTake(g_chain_master_exit_sem, portMAX_DELAY);

@@ -278,7 +278,7 @@ static mdf_err_t mlink_handle_get_info(mlink_handle_data_t *handle_data)
         mlink_json_pack(&handle_data->resp_data, "position", position);
     }
 
-    sprintf(tmp_str, "%d", g_device_info->tid);
+    sprintf(tmp_str, "%"PRIu32, g_device_info->tid);
     esp_mesh_get_parent_bssid(&parent_bssid);
 
     if (esp_mesh_get_layer() == MESH_ROOT) {
@@ -542,7 +542,7 @@ static mdf_err_t mlink_handle_add_device(mlink_handle_data_t *handle_data)
 
     mlink_json_parse(handle_data->req_data, "timeout", &duration_ms);
 
-    ret = mconfig_chain_master(mconfig_data, duration_ms / portTICK_RATE_MS);
+    ret = mconfig_chain_master(mconfig_data, duration_ms / portTICK_PERIOD_MS);
     MDF_ERROR_GOTO(ret != MDF_OK, EXIT, "<%s> Sending network configuration information to the devices",
                    mdf_err_to_name(ret));
 

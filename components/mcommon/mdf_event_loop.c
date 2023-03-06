@@ -20,7 +20,7 @@ typedef struct {
     void *ctx;
 } mdf_event_loop_data_t;
 
-static xQueueHandle g_event_queue_handle      = NULL;
+static QueueHandle_t g_event_queue_handle      = NULL;
 static TaskHandle_t g_event_task_handle       = NULL;
 static mdf_event_loop_cb_t g_event_handler_cb = NULL;
 static const char *TAG                        = "mdf_event_loop";
@@ -85,7 +85,7 @@ mdf_err_t mdf_event_loop_send(mdf_event_loop_t event, void *ctx)
     return MDF_OK;
 }
 
-static void event_send_timer_cb(void *timer)
+static void event_send_timer_cb(TimerHandle_t timer)
 {
     mdf_event_loop_data_t *event_data = (mdf_event_loop_data_t *)pvTimerGetTimerID(timer);
 

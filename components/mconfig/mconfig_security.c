@@ -54,8 +54,8 @@ mdf_err_t mconfig_dhm_gen_key(uint8_t *param, ssize_t param_size,
     ret = mbedtls_dhm_read_params(&dhm, &param, param + param_size);
     MDF_ERROR_GOTO(ret != ESP_OK, EXIT, "mbedtls_dhm_read_params, ret: 0x%x", -ret);
 
-    ret = mbedtls_dhm_make_public(&dhm, (int) mbedtls_mpi_size(&dhm.P),
-                                  pubkey, dhm.len, mconfig_random, NULL);
+    ret = mbedtls_dhm_make_public(&dhm, (int) mbedtls_mpi_size(&dhm.MBEDTLS_PRIVATE(P)),
+                                  pubkey, sizeof(dhm.MBEDTLS_PRIVATE(P)), mconfig_random, NULL);
     MDF_ERROR_GOTO(ret != ESP_OK, EXIT, "mbedtls_dhm_make_public, ret: 0x%x", -ret);
 
     ret = mbedtls_dhm_calc_secret(&dhm, privkey, MCONFIG_DH_PRIVKEY_LEN * 8,
@@ -78,13 +78,13 @@ static void mconfig_rsa_gen_key_task(void *arg)
     memset(privkey_pem, 0, MCONFIG_RSA_PRIVKEY_PEM_SIZE);
     memset(pubkey_pem, 0, MCONFIG_RSA_PUBKEY_PEM_SIZE);
 
-    mbedtls_rsa_init(&rsa, MBEDTLS_RSA_PKCS_V15, 0);
+    mbedtls_rsa_init(&rsa);
     ret = mbedtls_rsa_gen_key(&rsa, mconfig_random, NULL, MCONFIG_RSA_KEY_BITS, MCONFIG_RSA_EXPONENT);
     MDF_ERROR_GOTO(ret != ESP_OK, EXIT, "mbedtls_rsa_gen_key, ret: %x", -ret);
 
-    pk.pk_ctx  = &rsa;
-    pk.pk_info = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
-    MDF_ERROR_GOTO(!pk.pk_info, EXIT, "mbedtls_pk_info_from_type failed");
+    pk.MBEDTLS_PRIVATE(pk_ctx)  = &rsa;
+    pk.MBEDTLS_PRIVATE(pk_info) = mbedtls_pk_info_from_type(MBEDTLS_PK_RSA);
+    MDF_ERROR_GOTO(!pk.MBEDTLS_PRIVATE(pk_info), EXIT, "mbedtls_pk_info_from_type failed");
 
     ret = mbedtls_pk_write_key_pem(&pk, (uint8_t *)privkey_pem, MCONFIG_RSA_PRIVKEY_PEM_SIZE);
     MDF_ERROR_GOTO(ret != ESP_OK, EXIT, "mbedtls_pk_write_key_pem, ret: 0x%x", -ret);
@@ -171,18 +171,18 @@ mdf_err_t mconfig_rsa_decrypt(const uint8_t *ciphertext, const char *privkey_pem
 
     memset(&pk, 0, sizeof(mbedtls_pk_context));
 
-    ret = mbedtls_pk_parse_key(&pk, (uint8_t *)privkey_pem, MCONFIG_RSA_PRIVKEY_PEM_SIZE, NULL, 0);
+    ret = mbedtls_pk_parse_key(&pk, (uint8_t *)privkey_pem, MCONFIG_RSA_PRIVKEY_PEM_SIZE, NULL, 0,mconfig_random,NULL);
     MDF_ERROR_GOTO(ret < 0, EXIT, "mbedtls_pk_parse_key, privkey_pem: %s, ret: %x",
                    privkey_pem, -ret);
 
     rsa = mbedtls_pk_rsa(pk);
     MDF_ERROR_GOTO(!rsa, EXIT, "mbedtls_pk_rsa, rsa: %p", rsa);
-    rsa->len = MCONFIG_RSA_KEY_BITS / 8;
+    rsa->MBEDTLS_PRIVATE(len) = MCONFIG_RSA_KEY_BITS / 8;
 
     ret = mbedtls_rsa_check_privkey(rsa);
     MDF_ERROR_GOTO(ret != ESP_OK, EXIT, "mbedtls_rsa_check_privkey, ret: %x", -ret);
 
-    ret = mbedtls_rsa_pkcs1_decrypt(rsa, mconfig_random, NULL, MBEDTLS_RSA_PRIVATE,
+    ret = mbedtls_rsa_pkcs1_decrypt(rsa, mconfig_random, NULL,
                                     &olen, ciphertext, (uint8_t *)plaintext, plaintext_size);
     MDF_ERROR_GOTO(ret != ESP_OK, EXIT, "mbedtls_rsa_pkcs1_decrypt, ret: %x", -ret);
 
@@ -209,12 +209,12 @@ mdf_err_t mconfig_rsa_encrypt(const void *plaintext, size_t plaintext_size,
 
     rsa = mbedtls_pk_rsa(pk);
     MDF_ERROR_GOTO(!rsa, EXIT, "mbedtls_pk_rsa, rsa: %p", rsa);
-    rsa->len = MCONFIG_RSA_KEY_BITS / 8;
+    rsa->MBEDTLS_PRIVATE(len) = MCONFIG_RSA_KEY_BITS / 8;
 
     ret = mbedtls_rsa_check_pubkey(rsa);
     MDF_ERROR_GOTO(ret != ESP_OK, EXIT, "mbedtls_rsa_check_pubkey, ret: %x", -ret);
 
-    ret = mbedtls_rsa_pkcs1_encrypt(rsa, mconfig_random, NULL, MBEDTLS_RSA_PUBLIC, plaintext_size,
+    ret = mbedtls_rsa_pkcs1_encrypt(rsa, mconfig_random, NULL, plaintext_size,
                                     (uint8_t *)plaintext, ciphertext);
     MDF_ERROR_GOTO(ret != ESP_OK, EXIT, "mbedtls_rsa_pkcs1_encrypt, ret: %x", -ret);
 

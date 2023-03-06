@@ -27,7 +27,7 @@ static const char *TAG = "aliyun_mqtt";
 static esp_mqtt_client_handle_t g_mqtt_client = NULL;
 
 static bool g_mqtt_connet_flag = false;
-static xTimerHandle g_mqtt_disconnect_timer = NULL;
+static TimerHandle_t g_mqtt_disconnect_timer = NULL;
 
 mdf_err_t aliyun_mqtt_get_connet_status(void)
 {

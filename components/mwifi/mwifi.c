@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "mwifi.h"
-#include "miniz.h"
+#include "../third_party/miniz/miniz.h"
 
 #define MWIFI_WAIVE_ROOT_INTERVAL  3 /**< When the root rssi is weak, MWIFI_WAIVE_ROOT_INTERVAL minutes will initiate a re root node selection */
 #define MWIFI_EVET_INFO_SIZE 3
@@ -40,7 +40,7 @@ static mwifi_config_t *g_ap_config        = NULL;
 static mwifi_init_config_t *g_init_config = NULL;
 static bool g_rootless_flag                       = false;
 static mesh_event_toDS_state_t g_toDs_status_flag = false;
-static xTimerHandle g_waive_root_timer;
+static TimerHandle_t g_waive_root_timer;
 static int g_waive_root_interval                  = MWIFI_WAIVE_ROOT_INTERVAL; /**< Avoid frequent triggers waive root*/
 
 bool mwifi_is_started()
@@ -133,7 +133,7 @@ static mdf_err_t mwifi_waive_root_timer_create(void)
 
 static void esp_ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
-    MDF_LOGD("esp_ip_event_cb event_id: %d", event_id);
+    MDF_LOGD("esp_ip_event_cb event_id: %"PRIi32, event_id);
     static mesh_event_info_t s_event_info = { 0 };
 
     /**< Send event to the event handler */
@@ -165,7 +165,7 @@ static void esp_ip_event_cb(void *arg, esp_event_base_t event_base, int32_t even
 
 static void esp_mesh_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
-    MDF_LOGD("esp_mesh_event_cb event_id: %d", event_id);
+    MDF_LOGD("esp_mesh_event_cb event_id: %"PRIi32, event_id);
     static int s_disconnected_count = 0;
     static mesh_event_info_t s_evet_info[MWIFI_EVET_INFO_SIZE] = { 0 };
     static int evet_info_index = 0;
@@ -558,7 +558,7 @@ mdf_err_t mwifi_stop()
 
     /**< To ensure that all tasks are properly exited */
     MDF_LOGD("vTaskDelay 50ms");
-    vTaskDelay(50 / portTICK_RATE_MS);
+    vTaskDelay(50 / portTICK_PERIOD_MS);
 
     MDF_ERROR_ASSERT(esp_wifi_set_mode(WIFI_MODE_STA));
 
@@ -1006,17 +1006,17 @@ mdf_err_t __mwifi_read(uint8_t *src_addr, mwifi_data_type_t *data_type,
                              xTaskGetTickCount() - start_ticks < wait_ticks ?
                              wait_ticks - (xTaskGetTickCount() - start_ticks) : 0;
 
-            MDF_LOGV("wait_ticks: %d, start_ticks: %d, recv_ticks: %d", wait_ticks, start_ticks, recv_ticks);
+            MDF_LOGV("wait_ticks: %"PRIu32", start_ticks: %"PRIu32", recv_ticks: %d", wait_ticks, start_ticks, recv_ticks);
 
             /**< Receive a packet targeted to self over the mesh network */
-            ret = esp_mesh_recv((mesh_addr_t *)src_addr, &mesh_data, recv_ticks * portTICK_RATE_MS,
+            ret = esp_mesh_recv((mesh_addr_t *)src_addr, &mesh_data, recv_ticks * portTICK_PERIOD_MS,
                                 &data_flag, &mesh_opt, 1);
             MDF_LOGV("esp_mesh_recv, src_addr: " MACSTR ", size: %d, data: %.*s",
                      MAC2STR(src_addr), mesh_data.size, mesh_data.size, mesh_data.data);
 
             if (ret == ESP_ERR_MESH_NOT_START) {
                 MDF_LOGW("<ESP_ERR_MESH_NOT_START> Node failed to receive packets");
-                vTaskDelay(100 / portTICK_RATE_MS);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
                 continue;
             } else if (ret == ESP_ERR_MESH_TIMEOUT) {
                 MDF_LOGD("<MDF_ERR_MWIFI_TIMEOUT> Node failed to receive packets");
@@ -1048,7 +1048,7 @@ mdf_err_t __mwifi_read(uint8_t *src_addr, mwifi_data_type_t *data_type,
              */
             if (data_head.magic == s_data_magic) {
                 expect_seq--;
-                MDF_LOGD("Received duplicate packets, sequence: %d", s_data_magic);
+                MDF_LOGD("Received duplicate packets, sequence: %"PRIu32, s_data_magic);
                 continue;
             }
 
@@ -1334,15 +1334,15 @@ mdf_err_t __mwifi_root_read(uint8_t *src_addr, mwifi_data_type_t *data_type,
                          xTaskGetTickCount() - start_ticks < wait_ticks ?
                          wait_ticks - (xTaskGetTickCount() - start_ticks) : 0;
 
-        MDF_LOGV("wait_ticks: %d, start_ticks: %d, recv_ticks: %d", wait_ticks, start_ticks, recv_ticks);
+        MDF_LOGV("wait_ticks: %"PRIu32", start_ticks: %"PRIu32", recv_ticks: %d", wait_ticks, start_ticks, recv_ticks);
 
         /**< Receive a packet targeted to external IP network */
         ret = esp_mesh_recv_toDS((mesh_addr_t *)src_addr, &dest_addr,
-                                 &mesh_data, recv_ticks * portTICK_RATE_MS, &data_flag, &mesh_opt, 1);
+                                 &mesh_data, recv_ticks * portTICK_PERIOD_MS, &data_flag, &mesh_opt, 1);
 
         if (ret == ESP_ERR_MESH_NOT_START) {
             MDF_LOGW("<ESP_ERR_MESH_NOT_START> Node failed to receive packets");
-            vTaskDelay(100 / portTICK_RATE_MS);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
             continue;
         } else if (ret == ESP_ERR_MESH_TIMEOUT) {
             MDF_LOGD("<MDF_ERR_MWIFI_TIMEOUT> Node failed to receive packets");
@@ -1398,7 +1398,7 @@ mdf_err_t __mwifi_root_read(uint8_t *src_addr, mwifi_data_type_t *data_type,
         } else {
             mz_ret = uncompress((uint8_t *)data, (mz_ulong *)size, recv_data, recv_size);
             ret = (mz_ret == MZ_BUF_ERROR) ? MDF_ERR_BUF : MDF_FAIL;
-            MDF_ERROR_GOTO(mz_ret != MZ_OK, EXIT, "<%s> Uncompress, size: %d", mz_error(mz_ret), recv_size);
+            MDF_ERROR_GOTO(mz_ret != MZ_OK, EXIT, "<%s> Uncompress, size: %zu", mz_error(mz_ret), recv_size);
         }
     } else {
         if (type == MWIFI_DATA_MEMORY_MALLOC_INTERNAL) {
@@ -1415,7 +1415,7 @@ mdf_err_t __mwifi_root_read(uint8_t *src_addr, mwifi_data_type_t *data_type,
     }
 
     ret = MDF_OK;
-    MDF_LOGD("esp_mesh_recv_toDS, src_addr: " MACSTR ", size: %d, data: %.*s",
+    MDF_LOGD("esp_mesh_recv_toDS, src_addr: " MACSTR ", size: %zu, data: %.*s",
              MAC2STR(src_addr), *size, *size, (type == MWIFI_DATA_MEMORY_MALLOC_INTERNAL) ? * ((char **)data) : (char *)data);
 
 EXIT:

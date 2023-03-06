@@ -14,8 +14,8 @@ set(ENV{MDF_PATH} ${MDF_PATH})
 
 # set(ENV{IDF_PATH} "$ENV{MDF_PATH}/esp-idf/")
 
-set(EXTRA_COMPONENT_DIRS "${EXTRA_COMPONENT_DIRS} $ENV{MDF_PATH}/components/")
-set(EXTRA_COMPONENT_DIRS "${EXTRA_COMPONENT_DIRS} $ENV{MDF_PATH}/components/third_party")
+list(APPEND EXTRA_COMPONENT_DIRS $ENV{MDF_PATH}/components)
+list(APPEND EXTRA_COMPONENT_DIRS $ENV{MDF_PATH}/components/third_party)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 include($ENV{MDF_PATH}/mdf_functions.cmake)

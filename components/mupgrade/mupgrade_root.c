@@ -44,9 +44,9 @@ mdf_err_t mupgrade_firmware_init(const char *name, size_t size)
     MDF_ERROR_CHECK(size != OTA_SIZE_UNKNOWN && size > update->size,
                     MDF_ERR_INVALID_ARG, "The size of the firmware is wrong");
 
-    MDF_LOGI("Running partition, label: %s, type: 0x%x, subtype: 0x%x, address: 0x%x",
+    MDF_LOGI("Running partition, label: %s, type: 0x%x, subtype: 0x%x, address: 0x%"PRIx32,
              running->label, running->type, running->subtype, running->address);
-    MDF_LOGI("Update partition, label: %s, type: 0x%x, subtype: 0x%x, address: 0x%x",
+    MDF_LOGI("Update partition, label: %s, type: 0x%x, subtype: 0x%x, address: 0x%"PRIx32,
              update->label, update->type, update->subtype, update->address);
 
     if (!g_upgrade_config) {
@@ -147,7 +147,7 @@ mdf_err_t mupgrade_root_handle(const uint8_t *addr, const void *data, size_t siz
     MDF_LOGD("addr: " MACSTR ", size: %d", MAC2STR(addr), size);
 
     if (!xQueueSend(g_upgrade_config->queue, &q_data,
-                    CONFIG_MUPGRADE_WAIT_RESPONSE_TIMEOUT / portTICK_RATE_MS)) {
+                    CONFIG_MUPGRADE_WAIT_RESPONSE_TIMEOUT / portTICK_PERIOD_MS)) {
         MDF_LOGW("xQueueSend failed");
         MDF_FREE(q_data);
         return MDF_ERR_TIMEOUT;
@@ -190,7 +190,7 @@ static mdf_err_t mupgrade_request_status(uint8_t *progress_array, mupgrade_resul
     /**
      * @brief Remove the device that the firmware upgrade has completed.
      */
-    while (xQueueReceive(g_upgrade_config->queue, &q_data, CONFIG_MUPGRADE_WAIT_RESPONSE_TIMEOUT / portTICK_RATE_MS)) {
+    while (xQueueReceive(g_upgrade_config->queue, &q_data, CONFIG_MUPGRADE_WAIT_RESPONSE_TIMEOUT / portTICK_PERIOD_MS)) {
         mupgrade_status_t *status = (mupgrade_status_t *)q_data->data;
 
         if (status->written_size == status->total_size) {
@@ -236,7 +236,7 @@ static mdf_err_t mupgrade_request_status(uint8_t *progress_array, mupgrade_resul
 
         while (request_num > 0) {
             ret = xQueueReceive(g_upgrade_config->queue, &q_data,
-                                CONFIG_MUPGRADE_WAIT_RESPONSE_TIMEOUT / portTICK_RATE_MS);
+                                CONFIG_MUPGRADE_WAIT_RESPONSE_TIMEOUT / portTICK_PERIOD_MS);
 
             if (ret != pdTRUE) {
                 MDF_LOGD("xQueueReceive failed");
