@@ -167,6 +167,7 @@ EXIT:
     vTaskDelete(NULL);
 }
 
+#if CONFIG_MCONFIG_VERIFY_ROUTER
 static void combine_ap_mesh_password(uint8_t dst[64], const uint8_t *ap_password, const uint8_t *mesh_password)
 {
     uint8_t ap_sha256[32] = { 0 };
@@ -187,6 +188,7 @@ static void combine_ap_mesh_password(uint8_t dst[64], const uint8_t *ap_password
 
     MDF_LOGD("combine password: %s", dst);
 }
+#endif
 
 extern void btc_blufi_report_error(esp_blufi_error_state_t state);
 
