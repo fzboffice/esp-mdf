@@ -26,6 +26,7 @@
 #endif
 
 #ifdef CONFIG_IDF_TARGET_ESP32
+#include "soc/uart_reg.h"
 #include "esp32/rom/uart.h"
 #endif
 
