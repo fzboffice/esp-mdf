@@ -529,7 +529,8 @@ mdf_err_t mlink_ble_init(const mlink_ble_config_t *config)
     ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
     MDF_ERROR_CHECK(ret != ESP_GATT_OK, ret, "esp_bt_controller_enable");
 
-    ret = esp_bluedroid_init();
+    esp_bluedroid_config_t cfg = BT_BLUEDROID_INIT_CONFIG_DEFAULT();
+    ret = esp_bluedroid_init_with_cfg(&cfg);
     MDF_ERROR_CHECK(ret != ESP_GATT_OK, ret, "esp_bluedroid_init");
 
     ret = esp_bluedroid_enable();

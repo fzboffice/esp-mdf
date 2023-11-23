@@ -518,7 +518,12 @@ static mdf_err_t mlink_handle_add_device(mlink_handle_data_t *handle_data)
     ret = mwifi_get_config(&mconfig_data->config);
     MDF_ERROR_GOTO(ret != MDF_OK, EXIT, "<%s> Get the configuration of the AP", mdf_err_to_name(ret));
 
+#pragma GCC diagnostic push
+#if     __GNUC__ >= 9
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+#endif
     ret = mwifi_get_init_config(&mconfig_data->init_config);
+#pragma GCC diagnostic pop
     MDF_ERROR_GOTO(ret != MDF_OK, EXIT, "<%s> Get Mwifi init configuration", mdf_err_to_name(ret));
 
     ret = mlink_json_parse(handle_data->req_data, "whitelist", &whitelist_num);

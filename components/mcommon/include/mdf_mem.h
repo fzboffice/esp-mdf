@@ -172,10 +172,10 @@ void mdf_mem_print_task(void);
  */
 #define MDF_FREE(ptr) do { \
         if(ptr) { \
-            free(ptr); \
             if (MDF_MEM_DEBUG) { \
                 mdf_mem_remove_record(ptr, TAG, __LINE__); \
             } \
+            free(ptr); \
             ptr = NULL; \
         } \
     } while(0)
