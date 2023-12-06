@@ -41,6 +41,7 @@ menu "MDF Mcommon"
         config MDF_MEM_ALLOCATION_DEFAULT
             bool "default allocation strategy"
         config MDF_MEM_ALLOCATION_SPIRAM
+            depends on SPIRAM_USE_CAPS_ALLOC || SPIRAM_USE_MALLOC
             bool "allocate memory in SPIRAM"
 
     endchoice
